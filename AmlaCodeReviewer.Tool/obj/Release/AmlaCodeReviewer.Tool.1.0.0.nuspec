@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>AmlaCodeReviewer.Tool</id>
+    <version>1.0.0</version>
+    <authors>Amla</authors>
+    <description>AI-powered PR code reviewer that reads custom rules from .md files and posts inline GitHub PR comments.</description>
+    <tags>code-review github pr dotnet-tool ai gemini</tags>
+    <packageTypes>
+      <packageType name="DotnetTool" />
+    </packageTypes>
+    <repository type="git" />
+  </metadata>
+  <files>
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\obj\Release\net8.0\DotnetToolSettings.xml" target="tools\net8.0\any\DotnetToolSettings.xml" />
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\rules\cshtml-rules.md" target="tools\net8.0\any\rules\cshtml-rules.md" />
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\rules\js-rules.md" target="tools\net8.0\any\rules\js-rules.md" />
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\rules\no-console-log-rule.md" target="tools\net8.0\any\rules\no-console-log-rule.md" />
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\rules\performance-rules.md" target="tools\net8.0\any\rules\performance-rules.md" />
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\rules\security-rules.md" target="tools\net8.0\any\rules\security-rules.md" />
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\rules\tsql-rules.md" target="tools\net8.0\any\rules\tsql-rules.md" />
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\rules\typescript-rules.md" target="tools\net8.0\any\rules\typescript-rules.md" />
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\rules\vulnerability-rules.md" target="tools\net8.0\any\rules\vulnerability-rules.md" />
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\amla-review.dll" target="tools\net8.0\any\amla-review.dll" />
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\amla-review.deps.json" target="tools\net8.0\any\amla-review.deps.json" />
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\amla-review.runtimeconfig.json" target="tools\net8.0\any\amla-review.runtimeconfig.json" />
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\amla-review.pdb" target="tools\net8.0\any\amla-review.pdb" />
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\rules\cshtml-rules.md" target="tools\net8.0\any\rules\rules\cshtml-rules.md" />
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\rules\js-rules.md" target="tools\net8.0\any\rules\rules\js-rules.md" />
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\rules\no-console-log-rule.md" target="tools\net8.0\any\rules\rules\no-console-log-rule.md" />
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\rules\performance-rules.md" target="tools\net8.0\any\rules\rules\performance-rules.md" />
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\rules\security-rules.md" target="tools\net8.0\any\rules\rules\security-rules.md" />
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\rules\tsql-rules.md" target="tools\net8.0\any\rules\rules\tsql-rules.md" />
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\rules\typescript-rules.md" target="tools\net8.0\any\rules\rules\typescript-rules.md" />
+    <file src="D:\amlatool\AmlaCodeReviewer.Tool\rules\vulnerability-rules.md" target="tools\net8.0\any\rules\rules\vulnerability-rules.md" />
+  </files>
+</package>

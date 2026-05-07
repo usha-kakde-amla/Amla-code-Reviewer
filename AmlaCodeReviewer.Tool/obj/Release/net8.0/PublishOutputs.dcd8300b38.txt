@@ -1,0 +1,13 @@
+D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\amla-review.exe
+D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\rules\cshtml-rules.md
+D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\rules\js-rules.md
+D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\rules\no-console-log-rule.md
+D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\rules\performance-rules.md
+D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\rules\security-rules.md
+D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\rules\tsql-rules.md
+D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\rules\typescript-rules.md
+D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\rules\vulnerability-rules.md
+D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\amla-review.dll
+D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\amla-review.deps.json
+D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\amla-review.runtimeconfig.json
+D:\amlatool\AmlaCodeReviewer.Tool\bin\Release\net8.0\publish\amla-review.pdb

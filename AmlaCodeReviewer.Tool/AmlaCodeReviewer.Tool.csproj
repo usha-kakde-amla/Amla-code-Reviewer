@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- .NET Tool packaging -->
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>amla-review</AssemblyName>
+    <RootNamespace>AmlaCodeReviewer</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+
+    <!-- NuGet / dotnet tool metadata -->
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>amla-review</ToolCommandName>
+    <PackageId>AmlaCodeReviewer.Tool</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Amla</Authors>
+    <Description>AI-powered PR code reviewer that reads custom rules from .md files and posts inline GitHub PR comments.</Description>
+    <PackageTags>code-review;github;pr;dotnet-tool;ai;gemini</PackageTags>
+
+    <!-- Embed rules folder into the published output -->
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Bundle the default rules with the tool -->
+    <None Update="rules\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>true</Pack>
+      <PackagePath>tools/net8.0/any/rules/</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
