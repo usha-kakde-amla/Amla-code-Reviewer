@@ -406,29 +406,51 @@ static HttpClient BuildHttpClient(string? githubToken)
 
 static async Task<List<DiffLine>> FetchPRDiff(HttpClient http, string prUrl)
 {
-    string diffUrl = prUrl.TrimEnd('/');
-    if (!diffUrl.EndsWith(".diff")) diffUrl += ".diff";
+    // Parse owner/repo/pull-number from PR URL
+    var match = Regex.Match(prUrl, @"github\.com/([^/]+)/([^/]+)/pull/(\d+)");
 
-    Console.WriteLine($"📥  Fetching PR diff: {diffUrl}");
-    var response = await http.GetAsync(diffUrl);
+    if (!match.Success)
+    {
+        Console.Error.WriteLine("❌ Invalid GitHub PR URL.");
+        Environment.Exit(1);
+    }
+
+    string owner = match.Groups[1].Value;
+    string repo = match.Groups[2].Value;
+    string prNumber = match.Groups[3].Value;
+
+    // GitHub API URL
+    string apiUrl = $"https://api.github.com/repos/{owner}/{repo}/pulls/{prNumber}";
+
+    Console.WriteLine($"📥 Fetching PR diff via GitHub API:");
+    Console.WriteLine($"    {apiUrl}");
+
+    var request = new HttpRequestMessage(HttpMethod.Get, apiUrl);
+
+    // Request diff format
+    request.Headers.Accept.ParseAdd("application/vnd.github.v3.diff");
+
+    var response = await http.SendAsync(request);
 
     if (!response.IsSuccessStatusCode)
     {
+        Console.Error.WriteLine($"❌ GitHub API error: {(int)response.StatusCode} {response.ReasonPhrase}");
+
         if ((int)response.StatusCode == 404)
         {
-            Console.Error.WriteLine("\n❌  404 Not Found — check:");
-            Console.Error.WriteLine("    1. Repo may be private (set GITHUB_TOKEN)");
-            Console.Error.WriteLine("    2. PR number may not exist");
+            Console.Error.WriteLine("\nPossible reasons:");
+            Console.Error.WriteLine("1. Repository is private");
+            Console.Error.WriteLine("2. GITHUB_TOKEN lacks permissions");
+            Console.Error.WriteLine("3. Pull request does not exist");
         }
-        else
-        {
-            Console.Error.WriteLine($"❌  GitHub error: {(int)response.StatusCode} {response.ReasonPhrase}");
-        }
+
         Environment.Exit(1);
     }
 
     var diffContent = await response.Content.ReadAsStringAsync();
-    Console.WriteLine($"    ✅  Fetched {diffContent.Length} chars\n");
+
+    Console.WriteLine($"    ✅ Fetched {diffContent.Length} chars\n");
+
     return ParseDiff(diffContent);
 }
 
