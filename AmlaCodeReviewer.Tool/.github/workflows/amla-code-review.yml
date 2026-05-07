@@ -2,30 +2,14 @@ name: 🛡️ Amla Code Reviewer
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 permissions:
   pull-requests: write
   contents: read
-
-# ─────────────────────────────────────────────────────────────────────────────
-# HOW THIS WORKS:
-#
-# Option A — rules/ lives IN your target repo (recommended):
-#
-#   your-repo/
-#   ├── .github/
-#   │   └── workflows/
-#   │       └── amla-code-review.yml  ← this file
-#   └── rules/                        ← your custom rule .md files
-#       ├── security-rules.md
-#       └── ...
-#
-# Option B — rules/ is in this AmlaCodeReviewer repo, used via workflow_call:
-#   Set RULES_DIR to point to the checked-out rules path.
-#
-# The tool is installed from NuGet (or a local nupkg during dev).
-# ─────────────────────────────────────────────────────────────────────────────
 
 jobs:
   amla-code-review:
@@ -33,91 +17,80 @@ jobs:
 
     steps:
 
-      # ── Step 1: Checkout the PR branch ──────────────────────────────────────
+      # Checkout PR repository
       - name: Checkout PR code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # ── Step 2: List rule files ──────────────────────────────────────────────
+      # Checkout Rules Repository
+      - name: Checkout Amla Rules Repository
+        uses: actions/checkout@v4
+        with:
+          repository: usha-kakde-amla/Amla-code-Reviewer
+          path: external-rules
+          fetch-depth: 1
+
+      # Display rule files
       - name: List rule files
         run: |
-          echo "================================"
-          echo "  MD Rule files in ./rules:"
-          echo "================================"
-          ls -1 rules/*.md 2>/dev/null || echo "(no rules/ folder found — using tool defaults)"
-          echo "Total: $(ls rules/*.md 2>/dev/null | wc -l) rule file(s)"
+          echo "======================================="
+          echo " Markdown Rule Files"
+          echo "======================================="
 
-      # ── Step 3: Setup .NET 8 ────────────────────────────────────────────────
+          ls -1 external-rules/rules/*.md 2>/dev/null || echo "No rule files found"
+
+      # Setup .NET
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
-      # ── Step 4: Install amla-review global tool ──────────────────────────────
-      # To install from NuGet (once published):
-      #   dotnet tool install -g AmlaCodeReviewer.Tool
-      #
-      # To install from a local nupkg (during dev — store nupkg as a repo artifact
-      # or commit it to a tools/ folder):
-      #   dotnet tool install -g AmlaCodeReviewer.Tool --add-source ./nupkg
-      - name: Install amla-review tool
+      # Install Tool
+      - name: Install Amla Reviewer Tool
         run: |
-          dotnet tool install -g AmlaCodeReviewer.Tool \
-            || echo "Note: install from NuGet when published. Using local build fallback..."
+          dotnet tool install -g AmlaCodeReviewer.Tool || true
 
-      # ── Step 4b: (Dev fallback) Build & install from source ─────────────────
-      # Remove this step once the tool is published to NuGet.
-      - name: Build & install tool from source (dev fallback)
-        if: false   # set to true during local dev / before NuGet publish
-        run: |
-          cd AmlaCodeReviewer.Tool
-          dotnet pack -c Release -o ./nupkg --nologo -v quiet
-          dotnet tool install -g AmlaCodeReviewer.Tool \
-            --add-source ./nupkg \
-            --version 1.0.0
-
-      # ── Step 5: Build PR URL ─────────────────────────────────────────────────
+      # Build PR URL
       - name: Set PR URL
         id: pr-url
         run: |
           PR_URL="https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
-          echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
-          echo "PR URL: $PR_URL"
 
-      # ── Step 6: Run amla-review ──────────────────────────────────────────────
+          echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+
+      # Run Reviewer
       - name: Run Amla Code Reviewer
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL:   gemini-2.5-flash
-          GITHUB_TOKEN:   ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_MODEL: gemini-2.5-flash
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
         run: |
-          # Determine rules directory: use ./rules if it exists, else tool defaults
-          RULES_DIR="./rules"
-          [ -d "$RULES_DIR" ] || RULES_DIR=""
+
+          RULES_DIR="./external-rules/rules"
 
           amla-review review \
-            --pr            "${{ steps.pr-url.outputs.pr_url }}" \
-            --output        report.json \
-            ${RULES_DIR:+--rules "$RULES_DIR"} \
+            --pr "${{ steps.pr-url.outputs.pr_url }}" \
+            --rules "$RULES_DIR" \
+            --output report.json \
             --suggest-rules suggested-rules.json \
             --fail-on-error
+
         continue-on-error: true
 
-      # ── Step 7: Upload violations report ────────────────────────────────────
+      # Upload report
       - name: Upload violations report
         if: hashFiles('report.json') != ''
         uses: actions/upload-artifact@v4
         with:
           name: amla-report-pr-${{ github.event.pull_request.number }}
           path: report.json
-          retention-days: 30
 
-      # ── Step 8: Upload suggested rules ──────────────────────────────────────
+      # Upload suggested rules
       - name: Upload suggested rules artifact
         if: hashFiles('suggested-rules.json') != ''
         uses: actions/upload-artifact@v4
         with:
           name: suggested-rules-pr-${{ github.event.pull_request.number }}
           path: suggested-rules.json
-          retention-days: 30
