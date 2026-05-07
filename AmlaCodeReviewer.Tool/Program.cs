@@ -557,50 +557,71 @@ static List<Rule> LoadRules(string rulesDir)
 
 static List<Rule> ParseMarkdownRules(string content, string fileName)
 {
-    var rules  = new List<Rule>();
-    var blocks = content.Split(new[] { "\n---", "\r\n---" }, StringSplitOptions.RemoveEmptyEntries);
+    var rules = new List<Rule>();
+
+    var blocks = content.Split(
+        new[] { "\n---", "\r\n---" },
+        StringSplitOptions.RemoveEmptyEntries);
 
     foreach (var block in blocks)
     {
-        var lines      = block.Split('\n');
-        string? header = lines.FirstOrDefault(l => l.TrimStart().StartsWith("## "));
-        if (header == null) continue;
+        var lines = block.Split('\n');
 
-        var    headerText = header.TrimStart('#').Trim();
+        string? header = lines.FirstOrDefault(
+            l => l.TrimStart().StartsWith("## "));
+
+        if (header == null)
+            continue;
+
+        var headerText = header.TrimStart('#').Trim();
+
         string ruleId;
         string title;
 
         int dashIdx = headerText.IndexOf(" \u2014 ");
-        if (dashIdx < 0) dashIdx = headerText.IndexOf(" - ");
+
+        if (dashIdx < 0)
+            dashIdx = headerText.IndexOf(" - ");
 
         if (dashIdx >= 0)
         {
             ruleId = headerText[..dashIdx].Trim();
-            title  = headerText[(dashIdx + 3)..].Trim();
+            title = headerText[(dashIdx + 3)..].Trim();
         }
         else
         {
             ruleId = headerText.Trim();
-            title  = headerText.Trim();
+            title = headerText.Trim();
         }
 
-        if (string.IsNullOrWhiteSpace(ruleId)) continue;
+        if (string.IsNullOrWhiteSpace(ruleId))
+            continue;
 
-        string severity    = ExtractField(block, "Severity");
+        string severity = ExtractField(block, "Severity");
         string description = ExtractField(block, "Description");
-        string message     = ExtractField(block, "Message");
-        string fix         = ExtractField(block, "Fix");
-        var    detection   = ExtractBulletList(block, "Detection");
+        string message = ExtractField(block, "Message");
+        string fix = ExtractField(block, "Fix");
+
+        // NEW: Read FilePattern from markdown
+        string filePattern = ExtractField(block, "FilePattern");
+
+        var detection = ExtractBulletList(block, "Detection");
 
         rules.Add(new Rule
         {
-            RuleId      = ruleId,
-            Title       = title,
-            Severity    = NormalizeSeverity(severity),
+            RuleId = ruleId,
+            Title = title,
+            Severity = NormalizeSeverity(severity),
             Description = description,
-            Detection   = detection.Count > 0 ? detection : new List<string> { description },
-            Message     = message,
-            Fix         = fix
+            Detection = detection.Count > 0
+                ? detection
+                : new List<string> { description },
+
+            Message = message,
+            Fix = fix,
+
+            // NEW: assign file pattern
+            FilePattern = filePattern
         });
     }
 
@@ -719,7 +740,8 @@ static string BuildPrompt(List<Rule> rules, List<DiffLine> addedLines, bool incl
     sb.AppendLine("2. Added lines from a GitHub Pull Request diff.");
     sb.AppendLine();
     sb.AppendLine("YOUR ONLY JOB (Part 1 - Violations):");
-    sb.AppendLine("- Use the Detection hints in each rule to identify violations in the added lines.");
+    sb.AppendLine("- Use semantic understanding along with Detection hints to identify violations.");
+    sb.AppendLine("- Match coding patterns, anti-patterns, loops, SQL usage, API calls, and performance issues even if syntax varies.");
     sb.AppendLine("- Report ONLY violations of the exact rules listed below.");
     sb.AppendLine("- Do NOT suggest improvements or issues not covered by the rules.");
     sb.AppendLine("- Do NOT invent new RuleIds not in the rules list.");
