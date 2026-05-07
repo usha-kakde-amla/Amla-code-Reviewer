@@ -83,7 +83,7 @@ static async Task RunReview(string[] args)
                        ?? Environment.GetEnvironmentVariable("GITHUB_TOKEN");
 
     string model  = Environment.GetEnvironmentVariable("GEMINI_MODEL") ?? "gemini-2.5-flash";
-    string? apiKey = "AIzaSyDhlqfl9-NQa-N-pa5_MGtmjizIq_p5-D0";
+    string? apiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY");
 
     // ── Validate ───────────────────────────────────────────────────────────
     if (string.IsNullOrEmpty(prUrl))
