@@ -17,13 +17,17 @@ jobs:
 
     steps:
 
-      # Checkout PR repository
+      # ─────────────────────────────────────────────
+      # Step 1: Checkout PR Repository
+      # ─────────────────────────────────────────────
       - name: Checkout PR code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # Checkout Rules Repository
+      # ─────────────────────────────────────────────
+      # Step 2: Checkout Amla Rules Repository
+      # ─────────────────────────────────────────────
       - name: Checkout Amla Rules Repository
         uses: actions/checkout@v4
         with:
@@ -31,27 +35,45 @@ jobs:
           path: external-rules
           fetch-depth: 1
 
-      # Display rule files
+      # ─────────────────────────────────────────────
+      # Step 3: List Rule Files
+      # ─────────────────────────────────────────────
       - name: List rule files
         run: |
-          echo "======================================="
-          echo " Markdown Rule Files"
-          echo "======================================="
+          echo "================================"
+          echo " Rule files"
+          echo "================================"
 
-          ls -1 external-rules/rules/*.md 2>/dev/null || echo "No rule files found"
+          ls -1 external-rules/rules/*.md 2>/dev/null || echo "No rules found"
 
-      # Setup .NET
+      # ─────────────────────────────────────────────
+      # Step 4: Setup .NET 8
+      # ─────────────────────────────────────────────
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
-      # Install Tool
-      - name: Install Amla Reviewer Tool
+      # ─────────────────────────────────────────────
+      # Step 5: Build & Install Tool From Source
+      # ─────────────────────────────────────────────
+      - name: Build and Install Amla Reviewer Tool
         run: |
-          dotnet tool install -g AmlaCodeReviewer.Tool || true
 
-      # Build PR URL
+          cd external-rules/AmlaCodeReviewer.Tool
+
+          dotnet restore
+
+          dotnet pack -c Release -o ./nupkg
+
+          dotnet tool install -g AmlaCodeReviewer.Tool \
+            --add-source ./nupkg
+
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      # ─────────────────────────────────────────────
+      # Step 6: Set PR URL
+      # ─────────────────────────────────────────────
       - name: Set PR URL
         id: pr-url
         run: |
@@ -59,16 +81,33 @@ jobs:
 
           echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
 
-      # Run Reviewer
+          echo "PR URL:"
+          echo "$PR_URL"
+
+      # ─────────────────────────────────────────────
+      # Step 7: Get Latest Commit SHA
+      # ─────────────────────────────────────────────
+      - name: Set Commit SHA
+        run: |
+          echo "COMMIT_SHA=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
+
+      # ─────────────────────────────────────────────
+      # Step 8: Run Amla Code Reviewer
+      # ─────────────────────────────────────────────
       - name: Run Amla Code Reviewer
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: gemini-2.5-flash
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMIT_SHA: ${{ env.COMMIT_SHA }}
 
         run: |
 
-          RULES_DIR="./external-rules/rules"
+          RULES_DIR="./external-rules/AmlaCodeReviewer.Tool/rules"
+
+          echo "================================"
+          echo " Running Amla Code Reviewer"
+          echo "================================"
 
           amla-review review \
             --pr "${{ steps.pr-url.outputs.pr_url }}" \
@@ -77,20 +116,24 @@ jobs:
             --suggest-rules suggested-rules.json \
             --fail-on-error
 
-        continue-on-error: true
-
-      # Upload report
+      # ─────────────────────────────────────────────
+      # Step 9: Upload Violations Report
+      # ─────────────────────────────────────────────
       - name: Upload violations report
         if: hashFiles('report.json') != ''
         uses: actions/upload-artifact@v4
         with:
           name: amla-report-pr-${{ github.event.pull_request.number }}
           path: report.json
+          retention-days: 30
 
-      # Upload suggested rules
+      # ─────────────────────────────────────────────
+      # Step 10: Upload Suggested Rules
+      # ─────────────────────────────────────────────
       - name: Upload suggested rules artifact
         if: hashFiles('suggested-rules.json') != ''
         uses: actions/upload-artifact@v4
         with:
           name: suggested-rules-pr-${{ github.event.pull_request.number }}
           path: suggested-rules.json
+          retention-days: 30
